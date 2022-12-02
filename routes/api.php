@@ -43,8 +43,6 @@ Route::group([
     Route::post('/redem', 'GiftsController@redems');
 });
 
-
-
 Route::group([
     'middleware' => 'auth:api',
     'prefix' => 'roles'
@@ -60,8 +58,17 @@ Route::group([
     Route::post('/', 'RBACContoller@create_permission');
 });
 
-
-
+Route::group([
+    'middleware' => 'auth:api',
+    'prefix' => 'users'
+], function () {
+    Route::get('/{id}', 'UsersController@show');
+    Route::get('/', 'UsersController@get_all_users');
+    Route::post('/', 'UsersController@create');
+    Route::delete('/{id}', 'UsersController@delete');
+    Route::put('/{id}', 'UsersController@update_put');
+    Route::patch('/{id}', 'UsersController@update_patch');
+});
 
 // Public
 Route::group([
@@ -76,6 +83,3 @@ Route::group([
 ], function () {
     Route::post('/register', 'UsersController@register');
 });
-// Route::middleware('auth:api')->get('/user', function (Request $request) {
-//     return $request->user();
-// });

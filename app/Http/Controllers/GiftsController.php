@@ -21,26 +21,27 @@ class GiftsController extends Controller
     }
     public function index(Request $request)
     {
-        $limit = NULL;
-        $orderBy = 'rating';
-        $sortBy = 'asc';
-
-        if ($request->has('limit')) {
-            $limit = $request->input('limit');
-        }
-        if ($request->has('order')) {
-            if ($request->input('order') == 'new') {
-                $orderBy = 'new_gift';
-            } else {
-                $orderBy = $request->input('order');
-            }
-        }
-        if ($request->has('sort')) {
-            $sortBy = $request->input('sort');
-        }
-
-        $data = Gifts::orderBy($orderBy, $sortBy)->paginate($limit ?? config('amount_data_page'));
         try {
+            $limit = NULL;
+            $orderBy = 'rating';
+            $sortBy = 'asc';
+
+            if ($request->has('limit')) {
+                $limit = $request->input('limit');
+            }
+            if ($request->has('order')) {
+                if ($request->input('order') == 'new') {
+                    $orderBy = 'new_gift';
+                } else {
+                    $orderBy = $request->input('order');
+                }
+            }
+            if ($request->has('sort')) {
+                $sortBy = $request->input('sort');
+            }
+
+            $data = Gifts::orderBy($orderBy, $sortBy)->paginate($limit ?? config('amount_data_page'));
+
             return new GiftsCollection($data);
         } catch (\Throwable $th) {
             Log::debug($th);
