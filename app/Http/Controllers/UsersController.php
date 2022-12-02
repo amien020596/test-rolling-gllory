@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
+use Spatie\Permission\Models\Role;
 
 class UsersController extends Controller
 {
@@ -36,10 +37,20 @@ class UsersController extends Controller
             $user->name = $name;
             $user->email = $email;
             $user->password = $password;
+            $user->assignRole(Role::findByName('member', 'api'));
             $user->save();
-            $user->assignRole('member');
 
-            return new ResourcesUser($user);
+            $credentials = request(['email', 'password']);
+
+            if (!$token = auth('api')->attempt($credentials)) {
+                return response()->json(['error' => 'Unauthorized'], 401);
+            }
+
+            return response()->json([
+                'access_token' => $token,
+                'token_type' => 'bearer',
+                'expires_in' => auth()->factory()->getTTL() * 60
+            ]);
         } catch (\Throwable $th) {
             Log::debug($th);
             return response()->json(['data' => [], 'message' => 'error, internal server error', 'status' => 'error']);

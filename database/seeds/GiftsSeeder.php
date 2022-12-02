@@ -26,6 +26,7 @@ class GiftsSeeder extends Seeder
                 'price' => $faker->numberBetween(2000000, 5000000),
                 'wishlist' => $faker->numberBetween(0, 100),
                 'reviews' => $faker->numberBetween(0, 100),
+                'quantity' => $faker->numberBetween(0, 5),
                 'rating' => $faker->randomFloat(2, 2, 5),
                 'name' => "Samsung S Series " . $faker->randomFloat(2, 1, 5),
             ]);

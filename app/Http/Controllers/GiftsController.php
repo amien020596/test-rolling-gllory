@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Gifts;
 use App\Http\Resources\Gifts as ResourcesGifts;
 use App\Http\Resources\GiftsCollection;
+use App\RedemTransactions;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -13,6 +14,11 @@ use Illuminate\Http\Response;
 
 class GiftsController extends Controller
 {
+    const EMPTY_QUANTITY = 0;
+    const REDEM_AMOUNT = 1;
+    public function __construct()
+    {
+    }
     public function index(Request $request)
     {
         $limit = NULL;
@@ -165,6 +171,108 @@ class GiftsController extends Controller
             $gifts->fill($request->all());
             $gifts->save();
             return new ResourcesGifts($gifts);
+        } catch (\Throwable $th) {
+            Log::debug($th);
+            return response()->json(['data' => [], 'message' => 'error, internal server error', 'status' => 'error']);
+        }
+    }
+
+    public function redem($id)
+    {
+        try {
+            $gift = Gifts::find($id);
+            if ($gift) {
+                if ($gift->quantity == self::EMPTY_QUANTITY) {
+                    return response()->json(['data' => [], 'message' => 'Stock gifts' . $gift->name . ' are no longer available', 'status' => 'failed',]);
+                }
+
+                // check if user already redem this gifts 
+                $user_already_redem = RedemTransactions::where('users_id', auth()->id())->where('gifts_id', $gift->id)->first();
+                if ($user_already_redem) {
+                    return response()->json(['data' => [], 'message' => 'You already redem this gifts', 'status' => 'failed']);
+                }
+
+                // insert data into redem transaction
+                $redem_transaction = new RedemTransactions();
+                $redem_transaction->gifts_id = $gift->id;
+                $redem_transaction->users_id = auth()->id();
+                $redem_transaction->save();
+
+                // update quantity gifts
+                $gift->quantity = ($gift->quantity - self::REDEM_AMOUNT);
+                $gift->save();
+            } else {
+                return response()->json(['data' => [], 'message' => 'gifts are no longer available', 'status' => 'failed',]);
+            }
+        } catch (\Throwable $th) {
+            Log::debug($th);
+            return response()->json(['data' => [], 'message' => 'error, internal server error', 'status' => 'error']);
+        }
+    }
+
+    public function rating(Request $request, $id)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'rating' => 'required|numeric|max:5'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json(['data' => [], 'message' => $validator->errors(), 'status' => 'error',]);
+            }
+            $rating = $request->input('rating');
+
+            $gifts = Gifts::find($id);
+            if ($gifts) {
+                $gifts->rating = (($gifts->rating + $rating) / 2);
+                $gifts->save();
+            } else {
+                return response()->json(['data' => [], 'message' => 'gifts are no longer available', 'status' => 'error',]);
+            }
+        } catch (\Throwable $th) {
+            Log::debug($th);
+            return response()->json(['data' => [], 'message' => 'error, internal server error', 'status' => 'error']);
+        }
+    }
+
+    public function redems(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'gifts' => 'required'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json(['data' => [], 'message' => $validator->errors(), 'status' => 'error',]);
+            }
+            $gifts = $request->input('gifts');
+            foreach ($gifts as $id_gift) {
+                $gift = Gifts::find($id_gift);
+
+                if ($gift) {
+                    if ($gift->quantity == self::EMPTY_QUANTITY) {
+                        return response()->json(['data' => [], 'message' => 'Stock gifts ' . $gift->name . ' are no longer available', 'status' => 'failed',]);
+                    }
+
+                    // check if user already redem this gifts 
+                    $user_already_redem = RedemTransactions::where('users_id', auth()->id())->where('gifts_id', $gift->id)->first();
+                    if ($user_already_redem) {
+                        return response()->json(['data' => [], 'message' => 'You already redem this gift ' . $gift->name, 'status' => 'failed']);
+                    }
+
+                    // insert data into redem transaction
+                    $redem_transaction = new RedemTransactions();
+                    $redem_transaction->gifts_id = $gift->id;
+                    $redem_transaction->users_id = auth()->id();
+                    $redem_transaction->save();
+
+                    // update quantity gift
+                    $gift->quantity = ($gift->quantity - self::REDEM_AMOUNT);
+                    $gift->save();
+                } else {
+                    return response()->json(['data' => [], 'message' => 'gifts are no longer available', 'status' => 'failed',]);
+                }
+            }
         } catch (\Throwable $th) {
             Log::debug($th);
             return response()->json(['data' => [], 'message' => 'error, internal server error', 'status' => 'error']);

@@ -37,7 +37,13 @@ Route::group([
     Route::put('/{id}', 'GiftsController@update_put');
     Route::patch('/{id}', 'GiftsController@update_patch');
     Route::delete('/{id}', 'GiftsController@destroy');
+
+    Route::post('/{id}/redem', 'GiftsController@redem');
+    Route::post('/{id}/rating', 'GiftsController@rating');
+    Route::post('/redem', 'GiftsController@redems');
 });
+
+
 
 Route::group([
     'middleware' => 'auth:api',
@@ -53,8 +59,6 @@ Route::group([
 ], function () {
     Route::post('/', 'RBACContoller@create_permission');
 });
-
-
 
 
 
