@@ -21,6 +21,7 @@ class CreateGiftsTable extends Migration
             $table->json('images');
             $table->bigInteger('price')->default(0);
             $table->boolean('new_gift');
+            $table->integer('quantity')->default(0);
             $table->bigInteger('wishlist')->default(0);
             $table->bigInteger('reviews')->default(0);
             $table->timestamps();

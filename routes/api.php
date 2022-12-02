@@ -17,6 +17,7 @@ Route::get('/invalid_credential', function () {
     return response()->json(['data' => 'unauthorized']);
 })->name('login');
 
+// Auth
 Route::group([
     'middleware' => 'api',
     'prefix' => 'auth'
@@ -32,11 +33,12 @@ Route::group([
     'prefix' => 'gifts'
 ], function () {
     Route::post('/', 'GiftsController@store');
-    Route::put('/', 'GiftsController@update');
-    Route::patch('/', 'GiftsController@patch');
+    Route::put('/{id}', 'GiftsController@update_put');
+    Route::patch('/{id}', 'GiftsController@update_patch');
     Route::delete('/{id}', 'GiftsController@destroy');
 });
 
+// Public
 Route::group([
     'prefix' => 'gifts'
 ], function () {

@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\Response;
 
 class GiftsController extends Controller
 {
@@ -62,6 +63,7 @@ class GiftsController extends Controller
                 'description' => 'required',
                 'price' => 'required',
                 'new_gift' => 'required',
+                'quantity' => 'required|numeric',
                 'image_1' => 'required|image|max:1024|mimes:jpeg,bmp,png',
             ]);
 
@@ -72,6 +74,7 @@ class GiftsController extends Controller
             $description = $request->input('description');
             $price = $request->input('price');
             $is_new = $request->input('new_gift');
+            $quantity = $request->input('quantity');
 
             $images = [];
             for ($i = 1; $i <= config('images_number'); $i++) {
@@ -91,13 +94,12 @@ class GiftsController extends Controller
                 }
             }
 
-
-
             $gifts = new Gifts;
             $gifts->name = $name;
             $gifts->description = $description;
             $gifts->price = $price;
             $gifts->new_gift = $is_new;
+            $gifts->quantity = $quantity;
             $gifts->images = json_encode($images);
             $gifts->save();
 
@@ -120,6 +122,49 @@ class GiftsController extends Controller
                 return response()->json(['data' => [], 'message' => 'failed, failed to delete data gifts', 'status' => 'error']);
             }
             return response()->json(['data' => [], 'message' => 'succes, success delete data gift', 'status' => 'success']);
+        } catch (\Throwable $th) {
+            Log::debug($th);
+            return response()->json(['data' => [], 'message' => 'error, internal server error', 'status' => 'error']);
+        }
+    }
+
+    public function update_patch(Request $request, $id)
+    {
+        try {
+            $gifts = Gifts::findOrFail($id);
+
+            $gifts->fill($request->all());
+            if ($gifts->isClean()) {
+                return response()->json(['data' => [], 'message' => 'at least one value must change', 'status' => 'error']);
+            }
+            $gifts->save();
+            return new ResourcesGifts($gifts);
+        } catch (\Throwable $th) {
+            Log::debug($th);
+            return response()->json(['data' => [], 'message' => 'error, internal server error', 'status' => 'error']);
+        }
+    }
+
+    public function update_put(Request $request, $id)
+    {
+        try {
+
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|max:255',
+                'description' => 'required',
+                'price' => 'required',
+                'new_gift' => 'required',
+                'quantity' => 'required|numeric'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json(['data' => [], 'message' => $validator->errors(), 'status' => 'error',]);
+            }
+
+            $gifts = Gifts::findOrFail($id);
+            $gifts->fill($request->all());
+            $gifts->save();
+            return new ResourcesGifts($gifts);
         } catch (\Throwable $th) {
             Log::debug($th);
             return response()->json(['data' => [], 'message' => 'error, internal server error', 'status' => 'error']);
