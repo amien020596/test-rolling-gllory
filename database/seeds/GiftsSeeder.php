@@ -22,7 +22,7 @@ class GiftsSeeder extends Seeder
                     'https://picsum.photos/seed/picsum/200/300',
                     'https://picsum.photos/seed/picsum/200/300'
                 ]),
-                'new_gifts' => $faker->boolean(),
+                'new_gift' => $faker->boolean(),
                 'price' => $faker->numberBetween(2000000, 5000000),
                 'wishlist' => $faker->numberBetween(0, 100),
                 'reviews' => $faker->numberBetween(0, 100),

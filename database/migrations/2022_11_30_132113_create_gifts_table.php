@@ -15,14 +15,14 @@ class CreateGiftsTable extends Migration
     {
         Schema::create('gifts', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->float('rating', 8, 2);
-            $table->longText('description');
-            $table->json('images');
-            $table->bigInteger('price');
-            $table->boolean('new_gifts');
-            $table->bigInteger('wishlist');
-            $table->bigInteger('reviews');
             $table->mediumText('name');
+            $table->longText('description');
+            $table->float('rating', 8, 2)->default(0);
+            $table->json('images');
+            $table->bigInteger('price')->default(0);
+            $table->boolean('new_gift');
+            $table->bigInteger('wishlist')->default(0);
+            $table->bigInteger('reviews')->default(0);
             $table->timestamps();
         });
     }

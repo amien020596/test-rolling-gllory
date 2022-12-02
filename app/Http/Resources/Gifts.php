@@ -20,10 +20,10 @@ class Gifts extends JsonResource
             'description' => $this->description,
             'images' => json_decode($this->images),
             'price' => $this->price,
-            'countWishlist' => $this->wishlist,
-            'countReviews' => $this->reviews,
+            'countWishlist' => $this->wishlist ?? 0,
+            'countReviews' => $this->reviews ?? 0,
             'countRating' => $this->rating,
-            'isNew' => $this->new_gifts
+            'isNew' => $this->new_gift
         ];
     }
 }
