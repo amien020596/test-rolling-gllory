@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
 use JWTAuth;
+use App\Http\Resources\User as ResourcesUser;
+use App\User;
 use Tymon\JWTAuth\Exceptions\JWTException;
 
 class AuthController extends Controller
@@ -62,6 +64,17 @@ class AuthController extends Controller
         return response()->json(auth()->user());
     }
 
+    /**
+     * functin to get profile user
+     *
+     * @return void
+     */
+    public function profile()
+    {
+
+        $user = User::find(auth()->id());
+        return new ResourcesUser($user);
+    }
     /**
      * Log the user out (Invalidate the token).
      *
